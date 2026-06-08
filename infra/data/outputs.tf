@@ -1,9 +1,9 @@
 output "region" {
-    value = var.region
+  value = var.region
 }
 
 output "backup_bucket" {
-    value = aws_s3_bucket.backups.bucket
+  value = aws_s3_bucket.backups.bucket
 }
 
 output "eip_allocation_id" {
@@ -23,11 +23,11 @@ output "key_name" {
 }
 
 output "jwt_secret" {
-  value = random_password.JWT.result
+  value     = random_password.JWT.result
   sensitive = true
 }
 
 output "admin_token" {
-  value = random_password.JWT_admin.result
+  value     = random_password.JWT_admin.result
   sensitive = true
 }
