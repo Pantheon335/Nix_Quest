@@ -1,7 +1,7 @@
 variable "region" {
     description = "General AWS region"
     type = "string"
-    default = "eu-central-a"
+    default = "es-east-1"
 }
 
 variable "project" {
@@ -11,6 +11,6 @@ variable "project" {
 }
 
 variable "ssh_public_key" {
-  description = "Public SSH key"
-  type = string
+  description = "SSH public key for EC2 access"
+  type        = string
 }
