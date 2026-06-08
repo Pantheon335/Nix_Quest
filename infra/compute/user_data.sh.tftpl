@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+set -euxo pipefall
+
+APP_DIR=/opt/office-quest
+
+# --- packages ---------------------------------------------------------------
+export DEBIAN_FRONTEND=noninteractive
+apt update -y
+apt install -y docker.io docker-compose-v2 awscli git sqlite3
+systemctl enable --now docker
+
+# --- code -------------------------------------------------------------------
+git clone --branch "${repo_branch}" "${repo_url}" "$APP_DIR"
+cd "$APP_DIR"
+
+mkdir -p "$APP_DIR/data"
+
+# --- runtime env (read by docker compose AND the systemd backup units) ------
+cat >"$APP_DIR/deploy/.env: <<EOF
+JWT_SECRET=${jwt_secret}
+ADMIN_TOKEN=${admin_token}
+DOMAIN=${domain}
+ACME_EMAIL=${acme_email}
+BACKUP_BUCKET=${backup_bucket}
+AWS_DEFAULT_REGION=${region}
+EOF
+chmod 600 "$APP_DIR/deploy/.env"
+
+# --- restore previous progress from S3 (if any) -----------------------------
+set -a 
+source "$APP_DIR/deploy.env"
+set +a 
+bash "$APP_DIR/deploy/restore.sh" "$APP_DIR/data"
+
+# --- start the app ----------------------------------------------------------
+docker compose -f "$APP_DIR/deploy/docker-compose.yml" --env-file "$APP_DIR/deploy/.env" up -d --build
+
+# --- backup units -----------------------------------------------------------
+cp "$APP_DIR/deploy/quest-backup.service" /etc/systemd/system/
+cp "$APP_DIR/deploy/quest-backup.timer" /etc/systemd/system/
+cp "$APP_DIR/deploy/quest-shutdown-backup.service" /etc/systemd/system/
+systemctl daemon-reload
+systemctl enable --now quest-backup.timer
+systemctl enable quest-shutdown-backup.service
+systemctl start quest-shutdown-backup.service
