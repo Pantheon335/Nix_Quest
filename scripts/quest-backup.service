@@ -1,0 +1,9 @@
+[Unit]
+Description=Office Quest DB backup to S3
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=/opt/office-quest/deploy/.env
+ExecStart=/opt/office-quest/deploy/backup.sh

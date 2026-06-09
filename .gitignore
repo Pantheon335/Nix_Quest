@@ -30,5 +30,28 @@ crash.*.log
 # ------------------------
 # Lock file (DO NOT IGNORE)
 # ------------------------
-
 !.terraform.lock.hcl
+
+
+
+#--------------------------
+# App core
+#--------------------------
+
+# dependencies & build
+node_modules/
+dist/
+
+# runtime data (sqlite db; backed up to S3 separately)
+data/
+*.db
+*.db-shm
+*.db-wal
+
+# secrets
+.env
+.env.*
+!.env.example
+
+# quest answers in clear text — never commit
+quest/quest.plain.yaml

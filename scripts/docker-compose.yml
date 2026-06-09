@@ -1,0 +1,40 @@
+# Run from the repo with: docker compose -f deploy/docker-compose.yml --env-file deploy/.env up -d --build
+# Paths are relative to this file (deploy/), so ../app and ../data resolve into the repo root.
+
+services:
+  app:
+    build:
+      context: ../app
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - JWT_SECRET=${JWT_SECRET}
+      - ADMIN_TOKEN=${ADMIN_TOKEN}
+      - DB_PATH=/data/quest.db
+      - QUEST_CONFIG=/quest/quest.yaml
+    volumes:
+      - ../data:/data # host: <repo>/data - what backup.sh reads
+      - ../quest:/quest:ro # hashed quest config, read only
+    expose:
+      - "3000"
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2
+    depends_on:
+      - app
+    environment:
+      - DOMAIN=${DOMAIN}
+      - ACME_EMAIL=${ACME_EMAIL}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data # certs
+      - caddy_config:/config
+    restart: unless-stopped
+
+  volumes:
+    caddy_data:
+    caddy_config:

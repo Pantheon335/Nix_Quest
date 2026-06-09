@@ -1,0 +1,14 @@
+[Unit]
+Description=Backup Office Quest DB on shutdown
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+EnvironmentFile=/opt/office-quest/deploy/.env
+ExecStart=/bin/true
+ExecStop=/opt/office-quest/deploy/backup.sh
+
+[Install]
+WantedBy=multi-user.target

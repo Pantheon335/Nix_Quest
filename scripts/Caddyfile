@@ -1,0 +1,6 @@
+# DOMAIN and ACME_EMAIL are injected from deploy/.env via the caddy service env.
+{$DOMAIN} {
+	encode gzip
+	reverse_proxy app:3000
+	tls {$ACME_EMAIL}
+}
