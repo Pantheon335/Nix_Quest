@@ -3,7 +3,7 @@
 # ------------------------
 
 # Terraform working directories (recursively)
-**/.terraform/
+.terraform/
 
 # State files
 *.tfstate
