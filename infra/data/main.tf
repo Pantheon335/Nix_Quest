@@ -52,7 +52,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "backups" {
 
 resource "aws_eip" "main" {
   domain = "vpc"
-  tags   = { Name = "ToBeChanged" }
+  tags   = { Name = "${var.project}" }
 }
 
 resource "random_password" "JWT" {
