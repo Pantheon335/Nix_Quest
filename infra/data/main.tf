@@ -6,6 +6,7 @@ locals {
 
 resource "aws_s3_bucket" "backups" {
   bucket = local.bucket_name
+  tags   = { Name = "${var.project}" }
 
   lifecycle {
     prevent_destroy = true
