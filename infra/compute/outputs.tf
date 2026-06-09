@@ -3,11 +3,11 @@ output "public_ip" {
 }
 
 output "url" {
-  value = "https://{var.domain}"
+  value = "https://${var.domain}"
 }
 
 output "ssh" {
-  value = "ssh ubuntu@{data.terraform_remote_state.data.outputs.eip_public_ip}"
+  value = "ssh ubuntu@${data.terraform_remote_state.data.outputs.eip_public_ip}"
 }
 
 output "instance_id" {

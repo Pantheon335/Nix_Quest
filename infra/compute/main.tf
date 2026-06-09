@@ -8,7 +8,7 @@ data "terraform_remote_state" "data" {
 data "aws_ami" "ubuntu" {
   most_recent = true
   owners      = ["099720109477"] #Canonical
-  tags   = { Name = "${var.project}" }
+  tags        = { Name = "${var.project}" }
 
   filter {
     name   = "name"
