@@ -1,0 +1,11 @@
+title: Office Quest 2026
+intro_hint: "Your first clue: where the team's mornings begin and the beans are
+  always grinding."
+stages:
+  - code_hash: $2b$10$/YhBVdrzRL76boJ2PJ/12uCf6eCFUdqIm4lmqusbCJhlkXwwK7Mia
+    reveal: Nice. Now check under the chair nobody likes in the big meeting room.
+  - code_hash: $2b$10$RJsSM0TVqdNnkXc6PTR9du/TXx2PWV5yxG1qlmhogAfol9Ysy19Bi
+    reveal: Look behind the plant by the window on the 3rd floor.
+  - code_hash: $2b$10$kdaV7Dj9mV8W0b7q271LP.uAsNSvm8REUvArqLivIlujJrqxdMnqG
+    reveal: 🎉 You did it! Go tell the organizer to claim your prize.
+    final: true
