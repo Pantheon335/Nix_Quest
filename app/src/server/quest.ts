@@ -17,12 +17,14 @@ export function normalizeCode(input: string): string {
 const hashedStageSchema = z.object({
   code_hash: z.string().min(1),
   reveal: z.string().min(1),
+  image: z.string().min(1).optional(),
   final: z.boolean().optional().default(false),
 });
 
 const hashedQuestSchema = z.object({
   title: z.string().min(1),
   intro_hint: z.string().min(1),
+  intro_image: z.string().min(1).optional(),
   stages: z.array(hashedStageSchema).min(1),
 });
 
@@ -30,12 +32,14 @@ const hashedQuestSchema = z.object({
 export const plainStageSchema = z.object({
   code: z.string().min(1),
   reveal: z.string().min(1),
+  image: z.string().min(1).optional(),
   final: z.boolean().optional().default(false),
 });
 
 export const plainQuestSchema = z.object({
   title: z.string().min(1),
   intro_hint: z.string().min(1),
+  intro_image: z.string().min(1).optional(),
   stages: z.array(plainStageSchema).min(1),
 });
 
@@ -44,13 +48,28 @@ export type PlainQuest = z.infer<typeof plainQuestSchema>;
 export interface Stage {
   codeHash: string;
   reveal: string;
+  image: string | null;
   final: boolean;
 }
 
 export interface Quest {
   title: string;
   introHint: string;
+  introImage: string | null;
   stages: Stage[];
+}
+
+/**
+ * Turn a config image reference into a URL the browser can load.
+ * Absolute http(s) URLs pass through; anything else is served from the quest
+ * `assets/` folder via the /quest-assets route. So `clue1.jpg`, `assets/clue1.jpg`,
+ * and `https://…/clue1.jpg` all work.
+ */
+export function publicImage(img?: string | null): string | null {
+  if (!img) return null;
+  if (/^https?:\/\//i.test(img)) return img;
+  const clean = img.replace(/^\/?(?:quest-assets\/|assets\/)?/i, "");
+  return "/quest-assets/" + clean;
 }
 
 /** Load and validate the committed, hashed quest config. */
@@ -69,9 +88,11 @@ export function loadQuest(path: string): Quest {
   return {
     title: parsed.title,
     introHint: parsed.intro_hint,
+    introImage: publicImage(parsed.intro_image),
     stages: parsed.stages.map((s) => ({
       codeHash: s.code_hash,
       reveal: s.reveal,
+      image: publicImage(s.image),
       final: s.final,
     })),
   };
@@ -88,6 +109,12 @@ export function verifyCode(quest: Quest, stageIndex: number, submitted: string):
 export function hintForStage(quest: Quest, stageIndex: number): string {
   if (stageIndex <= 0) return quest.introHint;
   return quest.stages[stageIndex - 1].reveal;
+}
+
+/** The image (if any) accompanying the current clue at `stageIndex`. */
+export function imageForStage(quest: Quest, stageIndex: number): string | null {
+  if (stageIndex <= 0) return quest.introImage;
+  return quest.stages[stageIndex - 1].image;
 }
 
 export function isComplete(quest: Quest, stageIndex: number): boolean {

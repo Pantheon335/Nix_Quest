@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "../lib/api";
 import { socket } from "../lib/socket";
+import { feedVerb } from "../lib/feed";
 import { ProgressMeter, HintCard, Banner } from "../components";
 
 interface FeedEntry {
@@ -12,6 +13,7 @@ interface FeedEntry {
 interface TeamState {
   stage: number;
   hint: string | null;
+  hintImage: string | null;
   completed: boolean;
   completedBy: string | null;
   totalStages: number;
@@ -34,6 +36,7 @@ export default function Team() {
       stageOrder: number;
       displayName: string | null;
       nextHint: string | null;
+      nextHintImage: string | null;
       completed: boolean;
       solvedAt: string;
     }) => {
@@ -46,6 +49,7 @@ export default function Team() {
               ...prev,
               stage: e.stageOrder,
               hint: e.nextHint,
+              hintImage: e.nextHintImage,
               completed: e.completed,
               completedBy: e.completed ? e.displayName : prev.completedBy,
               feed: [
@@ -83,6 +87,9 @@ export default function Team() {
       if (r.data.ok) {
         setMsg({ tone: "success", text: r.data.reveal ?? "Correct!" });
         setCode("");
+        // Belt-and-braces: also refresh over REST in case the socket is reconnecting.
+        const fresh = await api.get<TeamState>("/api/team/state");
+        setState(fresh.data);
       } else {
         setMsg({ tone: "error", text: r.data.message ?? "That code isn't right." });
       }
@@ -97,11 +104,13 @@ export default function Team() {
 
   return (
     <div className="space-y-6">
-      <section className="panel animate-fade-up p-6">
+      <section className="panel animate-fade-up p-5 sm:p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="label">Team mode · everyone hunts together</div>
-            <h1 className="mt-1 font-display text-3xl font-semibold">The office is the map.</h1>
+            <h1 className="mt-1 font-display text-2xl font-semibold sm:text-3xl">
+              The office is the map.
+            </h1>
           </div>
         </div>
         <div className="mt-5">
@@ -114,7 +123,9 @@ export default function Team() {
           🎉 The hunt is complete{state.completedBy ? ` — sealed by ${state.completedBy}` : ""}!
         </Banner>
       ) : (
-        state.hint && <HintCard hint={state.hint} />
+        (state.hint || state.hintImage) && (
+          <HintCard hint={state.hint ?? ""} image={state.hintImage} />
+        )
       )}
 
       {!state.completed && (
@@ -144,7 +155,7 @@ export default function Team() {
         </form>
       )}
 
-      <section className="panel p-6">
+      <section className="panel p-5 sm:p-6">
         <div className="label mb-4">Live feed</div>
         {state.feed.length === 0 ? (
           <p className="text-sm text-muted">No codes cracked yet. Be the first.</p>
@@ -153,13 +164,12 @@ export default function Team() {
             {state.feed.map((f) => (
               <li
                 key={f.id}
-                className="flex items-center justify-between rounded-lg border border-white/5 bg-ink/40 px-4 py-2.5 text-sm"
+                className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 rounded-lg border border-white/5 bg-ink/40 px-4 py-2.5 text-sm"
               >
                 <span>
-                  <span className="font-semibold text-amber">
-                    {f.display_name || "Someone"}
-                  </span>{" "}
-                  cracked stage <span className="font-mono">{f.stage_order}</span>
+                  <span className="font-semibold text-amber">{f.display_name || "Someone"}</span>{" "}
+                  {feedVerb(`${f.stage_order}-${f.solved_at}`)} stage{" "}
+                  <span className="font-mono">{f.stage_order}</span>
                 </span>
                 <span className="font-mono text-xs text-muted">
                   {new Date(f.solved_at).toLocaleTimeString()}

@@ -23,9 +23,11 @@ const plain = plainQuestSchema.parse(parseYaml(readFileSync(inPath, "utf8")));
 const hashed = {
   title: plain.title,
   intro_hint: plain.intro_hint,
+  ...(plain.intro_image ? { intro_image: plain.intro_image } : {}),
   stages: plain.stages.map((s) => ({
     code_hash: bcrypt.hashSync(normalizeCode(s.code), BCRYPT_ROUNDS),
     reveal: s.reveal,
+    ...(s.image ? { image: s.image } : {}),
     ...(s.final ? { final: true } : {}),
   })),
 };

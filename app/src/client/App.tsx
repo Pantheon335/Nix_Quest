@@ -19,14 +19,14 @@ export default function App() {
             <div className="label">find · decode · advance</div>
           </div>
         </div>
-        <nav className="flex gap-1 rounded-2xl border border-white/10 bg-panel/50 p-1 backdrop-blur-sm">
+        <nav className="flex w-full gap-1 rounded-2xl border border-white/10 bg-panel/50 p-1 backdrop-blur-sm sm:w-auto">
           {tabs.map((t) => (
             <NavLink
               key={t.to}
               to={t.to}
               end={t.end}
               className={({ isActive }) =>
-                `rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${
+                `flex-1 whitespace-nowrap rounded-xl px-3 py-2 text-center text-xs font-semibold transition-colors sm:flex-none sm:px-4 sm:text-sm ${
                   isActive ? "bg-amber text-ink" : "text-muted hover:text-parchment"
                 }`
               }

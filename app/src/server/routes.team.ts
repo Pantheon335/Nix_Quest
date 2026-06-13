@@ -1,7 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { z } from "zod";
 import type { Server } from "socket.io";
-import { type Quest, hintForStage, verifyCode } from "./quest.js";
+import { type Quest, hintForStage, imageForStage, verifyCode } from "./quest.js";
 import {
   getTeamState,
   startTeamIfNeeded,
@@ -17,6 +17,7 @@ export function teamStatePayload(quest: Quest) {
   return {
     stage: s.current_stage,
     hint: completed ? null : hintForStage(quest, s.current_stage),
+    hintImage: completed ? null : imageForStage(quest, s.current_stage),
     completed,
     startedAt: s.started_at,
     completedAt: s.completed_at,
@@ -71,6 +72,7 @@ export function makeTeamRouter(quest: Quest, io: Server): Router {
       displayName: name,
       reveal: quest.stages[idx].reveal,
       nextHint: completed ? null : hintForStage(quest, newStage),
+      nextHintImage: completed ? null : imageForStage(quest, newStage),
       completed,
       solvedAt: entry.solved_at,
     });

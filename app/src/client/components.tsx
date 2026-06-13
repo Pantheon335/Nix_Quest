@@ -20,11 +20,21 @@ export function ProgressMeter({ stage, total }: { stage: number; total: number }
   );
 }
 
-export function HintCard({ hint }: { hint: string }) {
+export function HintCard({ hint, image }: { hint: string; image?: string | null }) {
   return (
-    <div className="panel animate-fade-up p-6">
+    <div className="panel animate-fade-up p-5 sm:p-6">
       <div className="label mb-2">Current clue</div>
-      <p className="font-display text-2xl leading-snug text-parchment">{hint}</p>
+      {hint && (
+        <p className="font-display text-xl leading-snug text-parchment sm:text-2xl">{hint}</p>
+      )}
+      {image && (
+        <img
+          src={image}
+          alt="Clue"
+          loading="lazy"
+          className={`w-full rounded-xl border border-white/10 object-contain ${hint ? "mt-4" : ""}`}
+        />
+      )}
     </div>
   );
 }

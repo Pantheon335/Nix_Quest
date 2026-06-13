@@ -23,6 +23,8 @@ const quest = loadQuest(QUEST_CONFIG);
 console.log(`Loaded quest "${quest.title}" with ${quest.stages.length} stage(s).`);
 
 const app = express();
+// Behind Caddy (one proxy hop): trust X-Forwarded-For so req.ip is the real client.
+app.set("trust proxy", 1);
 app.use(express.json());
 app.use(cookieParser());
 app.use(authFromCookie);
@@ -30,10 +32,13 @@ app.use(authFromCookie);
 const httpServer = createServer(app);
 const io = makeSockets(httpServer, quest);
 
-// Throttle code guessing on both modes.
+// Throttle code *guessing* on both modes. Only failed attempts count
+// (skipSuccessfulRequests), because the whole office shares one NAT'd IP —
+// correct submissions must never be throttled.
 const submitLimiter = rateLimit({
   windowMs: 60_000,
-  limit: 20,
+  limit: 60,
+  skipSuccessfulRequests: true,
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -45,6 +50,10 @@ app.use("/api/solo", makeSoloRouter(quest, io));
 app.use("/api/team", makeTeamRouter(quest, io));
 app.use("/api/admin", makeAdminRouter(quest, io));
 app.get("/api/leaderboard", leaderboardHandler);
+
+// Quest clue images (referenced by filename in the quest config) live next to
+// the config in an `assets/` folder and are served read-only here.
+app.use("/quest-assets", express.static(resolve(dirname(QUEST_CONFIG), "assets")));
 
 app.get("/healthz", (_req, res) => {
   const team = db.prepare(`SELECT current_stage FROM team_state WHERE id = 1`).get() as
@@ -60,11 +69,12 @@ app.get("/healthz", (_req, res) => {
 
 // Serve the built React client (production). In dev, Vite serves it on :5173.
 const clientDir = resolve(dirname(fileURLToPath(import.meta.url)), "../client");
-if (existsSync(clientDir)) {
+const clientIndex = resolve(clientDir, "index.html");
+if (existsSync(clientIndex)) {
   app.use(express.static(clientDir));
   app.use((req, res, next) => {
     if (req.method === "GET" && !req.path.startsWith("/api")) {
-      res.sendFile(resolve(clientDir, "index.html"));
+      res.sendFile(clientIndex);
       return;
     }
     next();

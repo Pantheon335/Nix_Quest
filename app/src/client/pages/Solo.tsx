@@ -8,6 +8,7 @@ interface SoloState {
   started: boolean;
   stage?: number;
   hint?: string | null;
+  hintImage?: string | null;
   completed?: boolean;
   startedAt?: string;
   completedAt?: string | null;
@@ -186,20 +187,24 @@ function Cabinet({
 
   return (
     <div className="space-y-6">
-      <section className="panel animate-fade-up flex flex-wrap items-center justify-between gap-4 p-6">
-        <div>
-          <div className="label">Solo cabinet</div>
-          <h1 className="mt-1 font-display text-3xl font-semibold">{username}</h1>
-        </div>
-        <div className="text-right">
-          <div className="label">Your time</div>
-          <div className="font-mono text-3xl text-amber tabular-nums">
-            {formatDuration(elapsed)}
+      <section className="panel animate-fade-up p-5 sm:p-6">
+        <div className="flex items-center justify-between gap-4">
+          <div className="min-w-0">
+            <div className="label">Solo cabinet</div>
+            <h1 className="mt-1 truncate font-display text-2xl font-semibold sm:text-3xl">
+              {username}
+            </h1>
           </div>
+          <button className="btn-ghost shrink-0" onClick={onLogout}>
+            Log out
+          </button>
         </div>
-        <button className="btn-ghost" onClick={onLogout}>
-          Log out
-        </button>
+        <div className="mt-4 flex items-baseline justify-between border-t border-white/10 pt-4">
+          <span className="label">Your time</span>
+          <span className="font-mono text-3xl text-amber tabular-nums">
+            {formatDuration(elapsed)}
+          </span>
+        </div>
       </section>
 
       {!run?.started ? (
@@ -223,8 +228,10 @@ function Cabinet({
             </Banner>
           ) : (
             <>
-              {run.hint && <HintCard hint={run.hint} />}
-              <form onSubmit={submit} className="panel animate-fade-up space-y-3 p-6">
+              {(run.hint || run.hintImage) && (
+                <HintCard hint={run.hint ?? ""} image={run.hintImage} />
+              )}
+              <form onSubmit={submit} className="panel animate-fade-up space-y-3 p-5 sm:p-6">
                 <div className="label">Enter the code you found</div>
                 <div className="flex flex-col gap-3 sm:flex-row">
                   <input

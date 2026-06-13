@@ -2,7 +2,7 @@ import { Router, type Request, type Response } from "express";
 import { z } from "zod";
 import type { Server } from "socket.io";
 import { requireAuth } from "./auth.js";
-import { type Quest, hintForStage, verifyCode } from "./quest.js";
+import { type Quest, hintForStage, imageForStage, verifyCode } from "./quest.js";
 import {
   getSoloRun,
   startSoloRun,
@@ -23,6 +23,7 @@ export function makeSoloRouter(quest: Quest, io: Server): Router {
     res.json({
       stage: run.current_stage,
       hint: hintForStage(quest, run.current_stage),
+      hintImage: imageForStage(quest, run.current_stage),
       startedAt: run.started_at,
       completedAt: run.completed_at,
       totalStages: quest.stages.length,
@@ -41,6 +42,7 @@ export function makeSoloRouter(quest: Quest, io: Server): Router {
       started: true,
       stage: run.current_stage,
       hint: completed ? null : hintForStage(quest, run.current_stage),
+      hintImage: completed ? null : imageForStage(quest, run.current_stage),
       completed,
       startedAt: run.started_at,
       completedAt: run.completed_at,
@@ -85,6 +87,7 @@ export function makeSoloRouter(quest: Quest, io: Server): Router {
       reveal: quest.stages[idx].reveal,
       completed,
       hint: completed ? null : hintForStage(quest, newStage),
+      hintImage: completed ? null : imageForStage(quest, newStage),
     });
   });
 
